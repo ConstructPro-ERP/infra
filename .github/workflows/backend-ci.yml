@@ -1,0 +1,52 @@
+name: Reusable backend CI
+
+on:
+  workflow_call:
+    secrets:
+      DATABASE_URL_TEST:
+        description: Test database connection used by backend integration tests
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  backend-ci:
+    name: Backend / format, lint, test, build, audit
+    runs-on: ubuntu-latest
+    env:
+      DATABASE_URL_TEST: ${{ secrets.DATABASE_URL_TEST }}
+    steps:
+      - name: Checkout caller repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check formatting
+        run: npm run format:check
+
+      - name: Generate Prisma client
+        run: npx prisma generate
+
+      - name: Check lint
+        run: npx eslint "{src,apps,libs,test}/**/*.ts" "*.ts"
+
+      - name: Run unit tests
+        run: npm run test:unit
+
+      - name: Run integration tests
+        run: npm run test:e2e
+
+      - name: Build
+        run: npm run build:all
+
+      - name: Audit production dependencies
+        continue-on-error: true
+        run: npm audit --omit=dev --audit-level=high

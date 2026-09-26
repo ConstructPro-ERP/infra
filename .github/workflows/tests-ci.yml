@@ -1,0 +1,104 @@
+name: Reusable integration test CI
+
+on:
+  workflow_call:
+    inputs:
+      run_e2e:
+        description: Run deployed browser tests in addition to static validation
+        type: boolean
+        default: false
+      frontend_base_url:
+        type: string
+        default: ""
+      api_base_url:
+        type: string
+        default: ""
+      invoice_id:
+        type: string
+        default: ""
+      project_id:
+        type: string
+        default: ""
+      payment_amount:
+        type: string
+        default: "1"
+    secrets:
+      E2E_USER_EMAIL:
+        required: false
+      E2E_USER_PASSWORD:
+        required: false
+      E2E_RESTRICTED_USER_EMAIL:
+        required: false
+      E2E_RESTRICTED_USER_PASSWORD:
+        required: false
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    name: Tests / typecheck and discovery
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout caller repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Discover Playwright tests
+        run: npx playwright test --list
+
+  e2e:
+    name: Tests / deployed E2E
+    if: inputs.run_e2e
+    needs: validate
+    runs-on: ubuntu-latest
+    environment: staging
+    env:
+      FRONTEND_BASE_URL: ${{ inputs.frontend_base_url }}
+      API_BASE_URL: ${{ inputs.api_base_url }}
+      E2E_INVOICE_ID: ${{ inputs.invoice_id }}
+      E2E_PROJECT_ID: ${{ inputs.project_id }}
+      E2E_PAYMENT_AMOUNT: ${{ inputs.payment_amount }}
+      E2E_USER_EMAIL: ${{ secrets.E2E_USER_EMAIL }}
+      E2E_USER_PASSWORD: ${{ secrets.E2E_USER_PASSWORD }}
+      E2E_RESTRICTED_USER_EMAIL: ${{ secrets.E2E_RESTRICTED_USER_EMAIL }}
+      E2E_RESTRICTED_USER_PASSWORD: ${{ secrets.E2E_RESTRICTED_USER_PASSWORD }}
+    steps:
+      - name: Checkout caller repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Run deployed E2E tests
+        run: npm run test:e2e
+
+      - name: Upload failure evidence
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-evidence
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 14

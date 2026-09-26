@@ -31,3 +31,23 @@ This repository contains the Infrastructure as Code (Docker, docker-compose, CI/
 ## Deployed Application
 
 Infrastructure provisions: [ConstructPro ERP (Staging)](https://staging.constructpro.com)
+
+## Shared CI
+
+Reusable GitHub Actions workflows live in `.github/workflows`:
+
+- `frontend-ci.yml` runs frontend lint, formatting, tests, build, and audit.
+- `backend-ci.yml` runs backend formatting, Prisma generation, lint, tests,
+  build, and audit.
+- `tests-ci.yml` validates the Playwright suite and can run deployed E2E tests.
+- `documents-ci.yml` checks documentation integrity and merge-conflict markers.
+
+Each application repository keeps a small `pull_request`/`push` caller workflow
+and delegates its jobs to this repository. The shared workflows currently use
+the `develop` ref. After merging and verifying them, publish a stable `v1` tag
+and update callers from `@develop` to `@v1`.
+
+For private organization repositories, GitHub Actions access for this repository
+must allow workflows to be called by the frontend, backend, tests, and documents
+repositories. Secrets remain configured in each caller repository or its
+protected `staging` environment.

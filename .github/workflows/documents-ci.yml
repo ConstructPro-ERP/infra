@@ -1,0 +1,27 @@
+name: Reusable documentation CI
+
+on:
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  documents-ci:
+    name: Documents / integrity
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout caller repository
+        uses: actions/checkout@v4
+
+      - name: Verify documentation exists
+        shell: bash
+        run: test -n "$(find . -type f -name '*.md' -not -path './.git/*' -print -quit)"
+
+      - name: Reject unresolved merge conflicts
+        shell: bash
+        run: |
+          if grep -RInE '^(<<<<<<<|=======|>>>>>>>)' --include='*.md' --exclude-dir='.git' .; then
+            echo "Unresolved merge conflict markers found in documentation."
+            exit 1
+          fi
