@@ -4,6 +4,7 @@ on:
   pull_request:
     branches: [develop, main]
   push:
+    branches: [develop, main]
 
 permissions:
   contents: read
@@ -12,7 +13,10 @@ jobs:
   workflow-validation:
     name: Validate GitHub Actions workflows
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout infrastructure repository
+        uses: actions/checkout@v7
+
       - name: Run actionlint
-        run: docker run --rm -v "$PWD:/repo" -w /repo rhysd/actionlint:1.7.7
+        run: docker run --rm -v "$PWD:/repo" -w /repo rhysd/actionlint:1.7.12
