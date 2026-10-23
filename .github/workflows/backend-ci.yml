@@ -56,9 +56,8 @@ jobs:
       - name: Build
         run: npm run build:all
 
-      - name: Audit production dependencies
-        continue-on-error: true
-        run: npm audit --omit=dev --audit-level=high
+      - name: Audit all dependencies
+        run: npm audit --audit-level=high
 
   cloudinary-live:
     name: Backend / real Cloudinary integration

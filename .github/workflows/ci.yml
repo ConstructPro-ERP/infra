@@ -10,6 +10,24 @@ permissions:
   contents: read
 
 jobs:
+  performance-tool-validation:
+    name: Validate performance checks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout infrastructure repository
+        uses: actions/checkout@v7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+
+      - name: Check performance runner syntax
+        run: node --check tests/performance/runner.mjs
+
+      - name: Run isolated performance runner tests
+        run: node --test tests/performance/runner.test.mjs
+
   workflow-validation:
     name: Validate GitHub Actions workflows
     runs-on: ubuntu-latest
