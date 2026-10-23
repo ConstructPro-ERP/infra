@@ -22,6 +22,21 @@ on:
       payment_amount:
         type: string
         default: "1"
+      client_project_id:
+        type: string
+        default: ""
+      client_document_id:
+        type: string
+        default: ""
+      client_quotation_id:
+        type: string
+        default: ""
+      other_client_project_id:
+        type: string
+        default: ""
+      other_client_document_id:
+        type: string
+        default: ""
     secrets:
       E2E_USER_EMAIL:
         required: false
@@ -30,6 +45,18 @@ on:
       E2E_RESTRICTED_USER_EMAIL:
         required: false
       E2E_RESTRICTED_USER_PASSWORD:
+        required: false
+      E2E_CLIENT_USER_EMAIL:
+        required: false
+      E2E_CLIENT_USER_PASSWORD:
+        required: false
+      E2E_OTHER_CLIENT_USER_EMAIL:
+        required: false
+      E2E_OTHER_CLIENT_USER_PASSWORD:
+        required: false
+      E2E_STAFF_USER_EMAIL:
+        required: false
+      E2E_STAFF_USER_PASSWORD:
         required: false
 
 permissions:
@@ -51,6 +78,9 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+
+      - name: Audit all dependencies
+        run: npm audit --audit-level=high
 
       - name: Typecheck
         run: npm run typecheck
@@ -74,6 +104,17 @@ jobs:
       E2E_USER_PASSWORD: ${{ secrets.E2E_USER_PASSWORD }}
       E2E_RESTRICTED_USER_EMAIL: ${{ secrets.E2E_RESTRICTED_USER_EMAIL }}
       E2E_RESTRICTED_USER_PASSWORD: ${{ secrets.E2E_RESTRICTED_USER_PASSWORD }}
+      E2E_CLIENT_USER_EMAIL: ${{ secrets.E2E_CLIENT_USER_EMAIL }}
+      E2E_CLIENT_USER_PASSWORD: ${{ secrets.E2E_CLIENT_USER_PASSWORD }}
+      E2E_CLIENT_PROJECT_ID: ${{ inputs.client_project_id }}
+      E2E_CLIENT_DOCUMENT_ID: ${{ inputs.client_document_id }}
+      E2E_CLIENT_QUOTATION_ID: ${{ inputs.client_quotation_id }}
+      E2E_OTHER_CLIENT_USER_EMAIL: ${{ secrets.E2E_OTHER_CLIENT_USER_EMAIL }}
+      E2E_OTHER_CLIENT_USER_PASSWORD: ${{ secrets.E2E_OTHER_CLIENT_USER_PASSWORD }}
+      E2E_OTHER_CLIENT_PROJECT_ID: ${{ inputs.other_client_project_id }}
+      E2E_OTHER_CLIENT_DOCUMENT_ID: ${{ inputs.other_client_document_id }}
+      E2E_STAFF_USER_EMAIL: ${{ secrets.E2E_STAFF_USER_EMAIL }}
+      E2E_STAFF_USER_PASSWORD: ${{ secrets.E2E_STAFF_USER_PASSWORD }}
     steps:
       - name: Checkout caller repository
         uses: actions/checkout@v7
