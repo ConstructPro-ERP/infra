@@ -1,6 +1,13 @@
 # ConstructPro ERP - Infrastructure
 
-Shared GitHub Actions workflows and staging performance tooling for [ConstructPro ERP](https://github.com/ConstructPro-ERP).
+[![CI](https://github.com/ConstructPro-ERP/infra/actions/workflows/ci.yml/badge.svg?branch=develop)](https://github.com/ConstructPro-ERP/infra/actions/workflows/ci.yml)
+
+**Live application:** https://construct-pro-teal.vercel.app/  
+**API documentation (Swagger):** https://construct-pro-api-gateway.vercel.app/api/docs
+
+## Overview
+
+This repository provides the shared GitHub Actions workflows and staging performance tooling for the ConstructPro ERP system.
 
 This checkout contains CI configuration and a Node.js performance runner. It does not contain a Docker Compose stack, an environment template, or deployment provisioning scripts. Application setup is documented in the frontend and backend repositories.
 
