@@ -1,0 +1,35 @@
+# Merge into .github/workflows/tests-ci.yml. The tests read these variables,
+# but the workflow does not pass them to the deployed E2E job today.
+
+on:
+  workflow_call:
+    inputs:
+      lead_id:
+        type: string
+        default: ""
+    secrets:
+      E2E_ADMIN_EMAIL:
+        required: false
+      E2E_ADMIN_PASSWORD:
+        required: false
+      E2E_ACCOUNTANT_EMAIL:
+        required: false
+      E2E_ACCOUNTANT_PASSWORD:
+        required: false
+
+jobs:
+  e2e:
+    env:
+      E2E_LEAD_ID: ${{ inputs.lead_id }}
+      E2E_ADMIN_EMAIL: ${{ secrets.E2E_ADMIN_EMAIL }}
+      E2E_ADMIN_PASSWORD: ${{ secrets.E2E_ADMIN_PASSWORD }}
+      E2E_ACCOUNTANT_EMAIL: ${{ secrets.E2E_ACCOUNTANT_EMAIL }}
+      E2E_ACCOUNTANT_PASSWORD: ${{ secrets.E2E_ACCOUNTANT_PASSWORD }}
+    steps:
+      # Keep the HTML report for every run, so the result can go in the report.
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: playwright-report
+          path: playwright-report/

@@ -1,0 +1,24 @@
+# Replace the "Run unit tests" step in .github/workflows/backend-ci.yml with
+# these steps. jest.unit.config.js has per-file coverage thresholds that a
+# plain run does not check; on backend develop (f6bf853) the coverage run
+# passed them (84 suites, 1,535 tests) on 23 October 2026. After merging, tag
+# a new version (for example v3.1.0) and point the backend caller at it.
+
+- name: Run unit tests with coverage
+  run: npm run test:coverage:unit
+
+- name: Publish coverage summary
+  if: always()
+  run: |
+    SUMMARY=coverage/unit/coverage-summary.json
+    LINES=$(jq '.total.lines.pct' "$SUMMARY")
+    BRANCHES=$(jq '.total.branches.pct' "$SUMMARY")
+    echo "Unit coverage: lines $LINES%, branches $BRANCHES%" \
+      >> "$GITHUB_STEP_SUMMARY"
+
+- name: Upload coverage report
+  if: always()
+  uses: actions/upload-artifact@v7
+  with:
+    name: backend-unit-coverage
+    path: coverage/unit/

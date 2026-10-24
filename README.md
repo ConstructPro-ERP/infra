@@ -1,5 +1,10 @@
 # ConstructPro ERP - Infrastructure
 
+[![CI](https://github.com/ConstructPro-ERP/infra/actions/workflows/ci.yml/badge.svg?branch=develop)](https://github.com/ConstructPro-ERP/infra/actions/workflows/ci.yml)
+
+**Live application:** https://construct-pro-teal.vercel.app/  
+**API documentation (Swagger):** https://construct-pro-api-gateway.vercel.app/api/docs
+
 ## Project Description
 
 This repository contains the Infrastructure as Code (Docker, docker-compose, CI/CD configurations, deployment scripts) for the **ConstructPro ERP** system. It supports the deployment and orchestration of the backend API, frontend application, and database services.
