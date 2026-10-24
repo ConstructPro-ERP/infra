@@ -103,7 +103,6 @@ Configure these values in the staging environment:
 
 | Kind | Name | Purpose |
 | --- | --- | --- |
-| Variable | `PERF_BASE_URL` | Gateway origin, such as `https://your-staging-gateway.example`; omit `/api` because route paths include it |
 | Secret | `PERF_AUTH_TOKEN` | Administrator/staff bearer token |
 | Variable | `PERF_PROJECT_ID` | Enables project detail, milestones, tasks, expenses, documents, and AI risk checks |
 | Variable | `PERF_INVOICE_ID` | Enables invoice detail and payment-list checks |
