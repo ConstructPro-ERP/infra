@@ -1,0 +1,56 @@
+name: Staging performance check
+
+on:
+  workflow_dispatch:
+    inputs:
+      users:
+        description: Concurrent read-only sessions to simulate
+        type: choice
+        options:
+          - "10"
+          - "50"
+          - "200"
+        default: "10"
+        required: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: staging-performance-check
+  cancel-in-progress: false
+
+jobs:
+  benchmark:
+    name: Benchmark all API modules
+    runs-on: ubuntu-latest
+    environment: staging
+    timeout-minutes: 15
+    env:
+      PERF_BASE_URL: ${{ vars.PERF_BASE_URL }}
+      PERF_AUTH_TOKEN: ${{ secrets.PERF_AUTH_TOKEN }}
+      PERF_CLIENT_AUTH_TOKEN: ${{ secrets.PERF_CLIENT_AUTH_TOKEN }}
+      PERF_PROJECT_ID: ${{ vars.PERF_PROJECT_ID }}
+      PERF_INVOICE_ID: ${{ vars.PERF_INVOICE_ID }}
+      PERF_CLIENT_PROJECT_ID: ${{ vars.PERF_CLIENT_PROJECT_ID }}
+      PERF_USERS: ${{ inputs.users }}
+    steps:
+      - name: Checkout infrastructure repository
+        uses: actions/checkout@v7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+
+      - name: Run bounded read-only benchmark
+        run: node tests/performance/runner.mjs
+
+      - name: Upload performance results
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: performance-results-${{ github.run_id }}
+          path: artifacts/performance-results.json
+          if-no-files-found: warn
+          retention-days: 30

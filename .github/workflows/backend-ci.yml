@@ -1,0 +1,95 @@
+name: Reusable backend CI
+
+on:
+  workflow_call:
+    secrets:
+      DATABASE_URL_TEST:
+        description: Test database connection used by backend integration tests
+        required: true
+      CLOUDINARY_CLOUD_NAME:
+        description: Cloudinary cloud name
+        required: false
+      CLOUDINARY_API_KEY:
+        description: Cloudinary API key
+        required: false
+      CLOUDINARY_API_SECRET:
+        description: Cloudinary API secret
+        required: false
+
+permissions:
+  contents: read
+
+jobs:
+  backend-ci:
+    name: Backend / format, lint, test, build, audit
+    runs-on: ubuntu-latest
+    env:
+      DATABASE_URL_TEST: ${{ secrets.DATABASE_URL_TEST }}
+    steps:
+      - name: Checkout caller repository
+        uses: actions/checkout@v7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check formatting
+        run: npm run format:check
+
+      - name: Generate Prisma client
+        run: npx prisma generate
+
+      - name: Check lint
+        run: npx eslint "{src,apps,libs,test}/**/*.ts" "*.ts"
+
+      - name: Run unit tests
+        run: npm run test:unit
+
+      - name: Run integration tests
+        run: npm run test:e2e
+
+      - name: Build
+        run: npm run build:all
+
+      - name: Audit all dependencies
+        run: npm audit --audit-level=high
+
+  cloudinary-live:
+    name: Backend / real Cloudinary integration
+    if: github.event_name == 'push'
+    needs: backend-ci
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    env:
+      CLOUDINARY_CLOUD_NAME: ${{ secrets.CLOUDINARY_CLOUD_NAME }}
+      CLOUDINARY_API_KEY: ${{ secrets.CLOUDINARY_API_KEY }}
+      CLOUDINARY_API_SECRET: ${{ secrets.CLOUDINARY_API_SECRET }}
+
+    steps:
+      - name: Checkout caller repository
+        uses: actions/checkout@v7
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+          cache: npm
+
+      - name: Verify Cloudinary credentials
+        shell: bash
+        run: |
+          test -n "$CLOUDINARY_CLOUD_NAME" || { echo "CLOUDINARY_CLOUD_NAME missing"; exit 1; }
+          test -n "$CLOUDINARY_API_KEY" || { echo "CLOUDINARY_API_KEY missing"; exit 1; }
+          test -n "$CLOUDINARY_API_SECRET" || { echo "CLOUDINARY_API_SECRET missing"; exit 1; }
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run live Cloudinary integration tests
+        run: npm run test:cloudinary-live
